@@ -19,6 +19,8 @@ https://docs.docker.com/engine/install/ubuntu/
 
 ## How to run pyspark project
 
+run containers:
+
 ``` bash
 $ docker-compose up -d
 
@@ -28,4 +30,14 @@ $ docker-compose up -d
  ✔ Container de-2024-spark-worker-1   Started
 ```
 
+spark-master UI: localhost:9090
 
+spark-submit:
+
+``` bash
+$ docker exec -it de-2024-spark-master-1 spark-submit --master spark://spark-master:7077 jobs/hello-world.py data/<filename>
+```
+
+## Jupyter Notebook
+
+test codes in jupyter notebook environment - localhost:8888
