@@ -1,0 +1,49 @@
+version: '3'
+
+x-spark-common: &spark-common
+  image: bitnami/spark:latest
+  volumes:
+    - ./jobs:/opt/bitnami/spark/jobs
+    - ./data:/opt/bitnami/spark/data
+    - ./resources:/opt/bitnami/spark/resources
+  networks:
+    - default-network
+
+services:
+  spark-master:
+    <<: *spark-common
+    hostname: spark-master
+    command: bin/spark-class org.apache.spark.deploy.master.Master
+    ports:
+      - "9090:8080"
+      - "7077:7077"
+
+  spark-worker:
+    <<: *spark-common
+    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    depends_on:
+      - spark-master
+    environment:
+      SPARK_MODE: worker
+      SPARK_WORKER_CORES: 2
+      SPARK_WORKER_MEMORY: 1g
+      SPARK_MASTER_URL: spark://spark-master:7077
+
+  #Jupyter notebook
+  jupyter-spark:
+    image: minz95/de2024:jupyter
+    networks:
+      - default-network
+    ports:
+      - "8888:8888"
+      - "4040-4080:4040-4080"
+    volumes:
+      - ./notebooks:/home/jovyan/work
+      - ./data:/home/jovyan/data
+      - ./jobs:/home/jovyan/jobs
+      - ./resources:/home/jovyan/resources
+    environment:
+      - JUPYTER_TOKEN=password
+
+networks:
+  default-network:
