@@ -4,15 +4,15 @@
 ## Directory Structure
 
 ```
-|- data
-   |- your data goes here
-|- jobs
-   |- your pyspark .py files go here
-|- notebooks
-   |- jupyter notebooks for practice go here
-|- resources
-   |- .jars for spark third-party app go here
-|- docker-compose.yml
+| data
+  |- your data goes here
+| jobs
+  |- your pyspark .py files go here
+| notebooks
+  |- jupyter notebooks for practice go here
+| resources
+  |- .jars for spark third-party app go here
+docker-compose.yml
 ```
 
 ## Preparation
