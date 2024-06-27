@@ -48,3 +48,15 @@ class DailyStatFilter(BaseFilter):
 
         stat_df.show(10, False)
         return stat_df
+
+class MonthlyStatFilter(BaseFilter):
+    def read_input(self, target_date):
+        # target_date: yyyy-MM
+        return self.spark.read.json(f"/opt/bitnami/spark/data/{target_date}-*.json")
+
+    def filter(self, df):
+        # daily stats
+        stat_df = df.agg(F.countDistinct('user_name').alias('d_user_count'))
+        stat_df = stat_df.crossJoin(df.agg(F.countDistinct('repository_id').alias('d_repo_count')))
+
+        return stat_df
