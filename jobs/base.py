@@ -37,12 +37,12 @@ def read_input(spark, input_path):
         return None
     
 def init_df(df):
-    df = df.withColumn('actor_json', F.from_json('actor', actor_schema)) \
-            .select('created_at', 'id', 'payload', 'type', 'actor_json.*', 'repo')
-    df = df.withColumn('payload_json', F.from_json('payload', payload_schema)) \
-            .select('login', 'url', 'created_at', 'id', 'payload_json.*', 'type', 'repo')
-    df = df.withColumn('repo_json', F.from_json('repo', repo_schema)) \
-            .select('login', 'url', 'created_at', 'id', 'repository_id', 'size', 'distinct_size', 'comment', 'type', 'repo_json.*')
+    df = df.select('created_at', 'id', 'payload', 'type', df.actor.login.alias('login'), df.actor.url.alias('url'), 'repo')
+    df = df.select('login', 'url', 'created_at', 'id', df.payload.repository_id.alias('repository_id'), \
+                   df.payload.size.alias('size'), df.payload.distinct_size.alias('distinct_size'), \
+                   df.payload.comment.alias('comment'), 'type', 'repo')
+    df = df.select('login', 'url', 'created_at', 'id', 'repository_id', 'size', 'distinct_size', 'comment', 'type', \
+                   F.col('repo.name').alias('name'), df.repo.url.alias('repo_url'))
     
     n_cols = ['user_name', 'url', 'created_at', 'id', 'repository_id', 'size', 'distinct_size', 'comment', \
             'type', 'name', 'repo_url']
@@ -57,52 +57,15 @@ def init_df(df):
     df = df.drop('name')
     return df
 
+def df_with_meta(df, datetime):
+    df = df.withColumn("@timestamp", F.lit(datetime)) 
+    return df
+
 
 class BaseFilter(ABC):
     def __init__(self, args):
         self.args = args
         self.spark = args.spark
-
-    def read_input(self):
-        def _input_exists(input_path):
-            return True
-
-        path = self.args.input_path
-        if _input_exists(path):
-            spark = self.spark
-            df = spark.read.json(path)
-            df.printSchema()
-            # max_executor_num = 3
-            # if df.rdd.getNumPartitions() < max_executor_num:
-            #     df = df.repartition(max_executor_num)
-            return df
-        else:
-            return None
-        
-    def df_with_meta(self, df, datetime):
-        df = df.withColumn("@timestamp", F.lit(datetime.strftime("%Y-%m-%d"))) 
-        return df
-
-    def init_df(self, df):
-        df = df.withColumn('actor_json', F.from_json('actor', actor_schema)) \
-                .select('created_at', 'id', 'payload', 'type', 'actor_json.*', 'repo')
-        df = df.withColumn('payload_json', F.from_json('payload', payload_schema)) \
-                .select('login', 'url', 'created_at', 'id', 'payload_json.*', 'type', 'repo')
-        df = df.withColumn('repo_json', F.from_json('repo', repo_schema)) \
-                .select('login', 'url', 'created_at', 'id', 'repository_id', 'size', 'distinct_size', 'comment', 'type', 'repo_json.*')
-        
-        n_cols = ['user_name', 'url', 'created_at', 'id', 'repository_id', 'size', 'distinct_size', 'comment', \
-                'type', 'name', 'repo_url']
-        df = df.toDF(*n_cols)
-
-        df = df.filter(F.col("login") != "github-actions[bot]")
-        df = df.withColumn('created_at', F.trim(F.regexp_replace(df.created_at, "[TZ]", " ")))
-        df = df.withColumn('created_at', F.to_timestamp(df.created_at, 'yyyy-MM-dd HH:mm:ss'))
-
-        udf_check_repo_name = F.udf(lambda name: name.split("/")[-1], StringType())
-        df = df.withColumn('repo_name', udf_check_repo_name(F.col('name')))
-        df = df.drop('name')
-        return df
 
     def filter(self, df):
         None

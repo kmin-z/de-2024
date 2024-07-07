@@ -6,7 +6,7 @@ import pyspark.sql.functions as F
 class TopRepoFilter(BaseFilter):
     def filter(self, df):
         # Top 10 Repo: Push Count
-        repo_cnt_df = df.groupBy('repository_id', 'name').pivot('type').count()
+        repo_cnt_df = df.groupBy('repository_id', 'repo_name').pivot('type').count()
         repo_cnt_df.where((F.col('repository_id').isNotNull())) \
                     .orderBy(F.desc('PushEvent')) \
                     .limit(10)

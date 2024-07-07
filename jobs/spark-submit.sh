@@ -6,7 +6,7 @@ JOBNAME="RefinePipeline"
 SCRIPT=$@
 echo ${SCRIPT}
 
-docker exec -it de-2024-spark-master-1 spark-submit \
+spark-submit \
   --name ${JOBNAME} \
   --master spark://spark-master:7077 \
   --jars ${JARS} \

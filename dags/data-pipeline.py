@@ -13,10 +13,10 @@ default_args = {
     # "on_failure_callback": ,
 }
 
-dag = DAG("download-github-archive", 
+dag = DAG("github-archive-pipeline", 
           default_args=default_args, 
           max_active_runs=1, 
-          schedule_interval="0 * * * *", 
+          schedule_interval="0 30 * * *", 
           catchup=False, 
           tags=['data'])
 
@@ -26,3 +26,12 @@ download_data = BashOperator(
     bash_command=f"/opt/airflow/jobs/download-data.sh {dt} ",
     dag=dag
 )
+
+filename = '/opt/airflow/jobs/main.py'
+filter_data = BashOperator(
+    task_id='filter-data',
+    bash_command=f'/opt/airflow/jobs/spark-submit.sh {filename} ',
+    dag=dag
+)
+
+download_data >> filter_data
