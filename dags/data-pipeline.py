@@ -16,7 +16,7 @@ default_args = {
 dag = DAG("github-archive-pipeline", 
           default_args=default_args, 
           max_active_runs=1, 
-          schedule_interval="0 30 * * *", 
+          schedule_interval="30 0 * * *", 
           catchup=False, 
           tags=['data'])
 
