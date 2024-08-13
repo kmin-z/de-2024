@@ -6,6 +6,8 @@ x-spark-common: &spark-common
     - ./jobs:/opt/bitnami/spark/jobs
     - ./data:/opt/bitnami/spark/data
     - ./resources:/opt/bitnami/spark/resources
+  environment:
+      TZ: "Asia/Seoul"
   networks:
     - default-network
 
@@ -19,10 +21,12 @@ x-airflow-common: &airflow-common
     - ./jobs:/opt/airflow/jobs
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
-    - ./data:/opt/bitnami/spark/data
     - ./resources:/opt/bitnami/spark/resources
+    - ./data:/opt/bitnami/spark/data
   depends_on:
     - postgres
+  environment:
+      TZ: "Asia/Seoul"
   networks:
     - default-network
 
@@ -62,9 +66,9 @@ services:
 
   #Jupyter notebook
   jupyter-spark:
-    image: minz95/de2024:jupyter
-    #build:
-    #  dockerfile: jupyter/Dockerfile
+    # image: minz95/de2024:jupyter
+    build:
+     dockerfile: jupyter/Dockerfile
     networks:
       - default-network
     ports:
